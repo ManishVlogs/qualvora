@@ -40,3 +40,8 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+# Added by code-review-graph
+.code-review-graph/
+
+# Blocked by corporate proxy content inspection on push
+Qualvora_Functional_Documentation.pdf

@@ -1,0 +1,64 @@
+<nav class="sidenav" [class.collapsed]="collapsed">
+
+  <!-- Brand -->
+  <div class="sidenav-brand">
+    <div class="brand-q">Q</div>
+    @if (!collapsed) {
+      <span class="brand-name">Qualvora</span>
+    }
+  </div>
+
+  <!-- Main nav -->
+  <ul class="nav flex-column sidenav-nav">
+    @for (item of mainItems(); track item.route) {
+      @if (item.dividerBefore) {
+        <li class="nav-divider"></li>
+      }
+      <li class="nav-item">
+        @if (item.locked) {
+          <!-- Locked item (non-navigable) -->
+          <a class="nav-link nav-link-locked"
+             [title]="collapsed ? item.label : ''"
+             href="#"
+             (click)="$event.preventDefault()">
+            <i class="bi {{ item.icon }} nav-icon"></i>
+            @if (!collapsed) {
+              <span class="nav-label">{{ item.label }}</span>
+              <span class="badge-pro ms-auto">PRO</span>
+            }
+          </a>
+        } @else {
+          <a class="nav-link"
+             [routerLink]="item.route"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' }"
+             [title]="collapsed ? item.label : ''">
+            <i class="bi {{ item.icon }} nav-icon"></i>
+            @if (!collapsed) {
+              <span class="nav-label">{{ item.label }}</span>
+            }
+          </a>
+        }
+      </li>
+    }
+  </ul>
+
+  <!-- Bottom nav -->
+  <div class="sidenav-bottom">
+    @for (item of bottomItems(); track item.route) {
+      <a class="nav-link"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         [title]="collapsed ? item.label : ''">
+        <i class="bi {{ item.icon }} nav-icon"></i>
+        @if (!collapsed) {
+          <span class="nav-label">{{ item.label }}</span>
+        }
+      </a>
+    }
+    <button class="btn btn-link collapse-btn" (click)="toggleCollapse.emit()" [title]="collapsed ? 'Expand' : 'Collapse'">
+      <i class="bi" [class.bi-chevron-double-left]="!collapsed" [class.bi-chevron-double-right]="collapsed"></i>
+    </button>
+  </div>
+
+</nav>
