@@ -1,0 +1,290 @@
+<header class="topbar">
+
+  <!-- Overlay to close menus (must be inside header to share its stacking context) -->
+  @if (showCreateMenu() || showUserMenu() || showNotifPanel() || showSiteMenu()) {
+    <div class="tb-overlay" (click)="closeAllMenus()"></div>
+  }
+
+  <!-- LEFT: Menu toggle + Logo + Site Switcher -->
+  <div class="tb-left">
+    <button class="btn btn-link tb-icon-btn" (click)="menuToggle.emit()" title="Toggle sidebar">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Logo wordmark -->
+    <div class="tb-brand" [routerLink]="['/dashboard']" role="button">
+      <div class="tb-q-icon">Q</div>
+      <span class="tb-wordmark">Qualvora</span>
+    </div>
+
+    <!-- Site Switcher -->
+    <div class="q-dropdown-wrap ms-3 site-switcher-wrap">
+      @if (canSwitchSite()) {
+        <!-- Director: interactive dropdown -->
+        <button class="btn tb-site-btn" (click)="toggleMenu('site')">
+          <i class="bi bi-building me-1"></i>
+          {{ siteStore.currentSite() }}
+          <i class="bi bi-chevron-down ms-1 small"></i>
+        </button>
+        @if (!showSiteMenu()) {
+          <div class="site-tooltip">
+            <div class="site-tooltip-title">
+              <i class="bi bi-building me-1"></i> Site Switcher
+            </div>
+            <p class="site-tooltip-body">
+              Your company operates multiple manufacturing plants. Each site has its own NCRs, audits, LPA checks and documents.
+              Switch here to scope everything on screen to a specific location.
+            </p>
+            <div class="site-tooltip-note">
+              <i class="bi bi-info-circle me-1"></i>
+              Currently viewing: <strong>{{ siteStore.currentSite() }}</strong>
+            </div>
+          </div>
+        }
+        @if (showSiteMenu()) {
+          <div class="q-dropdown-menu">
+            <div class="q-dropdown-header">Switch Site</div>
+            @for (site of sites; track site) {
+              <button class="q-dropdown-item" (click)="selectSite(site)">
+                <i class="bi bi-building" style="color:#94A3B8"></i>
+                {{ site }}
+                @if (site === siteStore.currentSite()) {
+                  <i class="bi bi-check ms-auto" style="color:#16A34A"></i>
+                }
+              </button>
+            }
+            <div class="q-dropdown-divider"></div>
+            <div class="site-menu-hint">
+              <i class="bi bi-info-circle me-1"></i>
+              Switching site filters all NCRs, audits, documents and LPA data to that location.
+            </div>
+          </div>
+        }
+      } @else {
+        <!-- All other roles: locked to their assigned site -->
+        <div class="tb-site-locked">
+          <i class="bi bi-building me-1"></i>
+          {{ siteStore.currentSite() }}
+          <i class="bi bi-lock-fill ms-1" style="font-size:10px; color:#94A3B8" title="You are locked to your assigned site"></i>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- CENTER: Search -->
+  <div class="tb-center">
+    <div class="tb-search">
+      <i class="bi bi-search tb-search-icon"></i>
+      <input
+        type="text"
+        class="tb-search-input"
+        placeholder="Search records, docs... Ctrl+K"
+        readonly
+        (click)="openSearch()"
+      />
+      <span class="tb-search-kbd">⌘K</span>
+    </div>
+  </div>
+
+  <!-- RIGHT: Create + Bell + Help + Avatar -->
+  <div class="tb-right">
+
+    <!-- Create dropdown -->
+    <div class="q-dropdown-wrap">
+      <button class="btn btn-primary tb-create-btn" (click)="toggleMenu('create')">
+        <i class="bi bi-plus-lg me-1"></i>
+        Create
+        <i class="bi bi-chevron-down ms-1 small"></i>
+      </button>
+      @if (showCreateMenu()) {
+        <div class="q-dropdown-menu end">
+          <div class="q-dropdown-header">Create New</div>
+
+          @if (!isOperator()) {
+            <div class="q-tip-wrap">
+              <button class="q-dropdown-item" (click)="navigateTo('/ncrs/new')">
+                <i class="bi bi-exclamation-triangle" style="color:#DC2626"></i>
+                New NCR
+              </button>
+              <div class="q-tip">
+                <strong>Non-Conformance Report</strong>
+                Log a defect, quality escape, or process deviation.
+                Use when a part or process doesn't meet spec.
+              </div>
+            </div>
+
+            <div class="q-tip-wrap">
+              <button class="q-dropdown-item" (click)="navigateTo('/capas/new')">
+                <i class="bi bi-tools" style="color:#059669"></i>
+                New CAPA
+              </button>
+              <div class="q-tip">
+                <strong>Corrective &amp; Preventive Action</strong>
+                Fix the root cause of a recurring issue.
+                Usually linked to an existing NCR or audit finding.
+              </div>
+            </div>
+
+            <div class="q-tip-wrap">
+              <button class="q-dropdown-item" (click)="navigateTo('/documents/new')">
+                <i class="bi bi-file-earmark-text" style="color:#2563EB"></i>
+                New Document
+              </button>
+              <div class="q-tip">
+                <strong>Controlled Document</strong>
+                Create a work instruction, SOP, form, or spec.
+                Goes through review &amp; approval before publishing.
+              </div>
+            </div>
+
+            <div class="q-tip-wrap">
+              <button class="q-dropdown-item" (click)="navigateTo('/audits/new')">
+                <i class="bi bi-clipboard-check" style="color:#7C3AED"></i>
+                New Audit
+              </button>
+              <div class="q-tip">
+                <strong>Quality Audit</strong>
+                Schedule an internal, supplier, or LPA audit.
+                Assign checklists and assign auditors to a date.
+              </div>
+            </div>
+
+            <div class="q-dropdown-divider"></div>
+          }
+
+          <div class="q-tip-wrap">
+            <button class="q-dropdown-item" (click)="navigateTo('/ncrs/quick')">
+              <i class="bi bi-phone" style="color:#0891B2"></i>
+              Quick NCR <span style="font-size:10px;color:#94A3B8;margin-left:4px">Mobile</span>
+            </button>
+            <div class="q-tip">
+              <strong>Quick NCR (Mobile)</strong>
+              3-step capture optimised for the shop floor.
+              Log a defect in under 60 sec from your phone.
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+
+    <!-- Notification bell -->
+    <div class="q-dropdown-wrap">
+      <button class="btn btn-link tb-icon-btn position-relative" (click)="toggleMenu('notif')" title="Notifications">
+        <i class="bi bi-bell"></i>
+        @if (notificationStore.hasUnread()) {
+          <span class="notif-badge">{{ notificationStore.unreadCount() > 9 ? '9+' : notificationStore.unreadCount() }}</span>
+        }
+      </button>
+      @if (showNotifPanel()) {
+        <div class="q-dropdown-menu end notif-panel">
+          <div class="notif-panel-header">
+            <span class="notif-panel-title">Notifications</span>
+            @if (notificationStore.hasUnread()) {
+              <button class="btn btn-link btn-sm notif-mark-all" (click)="markAllRead()">Mark all read</button>
+            }
+          </div>
+          <div class="notif-list">
+            @for (n of notificationStore.notifications(); track n.id) {
+              <div class="notif-item" [class.notif-unread]="!n.isRead" [routerLink]="n.link" (click)="closeAllMenus()">
+                <div class="notif-dot {{ n.type }}"></div>
+                <div class="notif-body">
+                  <div class="notif-title">{{ n.title }}</div>
+                  <div class="notif-msg">{{ n.message }}</div>
+                  <div class="notif-time">{{ n.createdAt | date:'short' }}</div>
+                </div>
+              </div>
+            }
+            @if (notificationStore.notifications().length === 0) {
+              <div class="notif-empty">No notifications</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Mobile Preview Toggle -->
+    <button class="btn btn-link tb-icon-btn"
+      [class.tb-active-btn]="mobilePreview.isActive()"
+      (click)="mobilePreview.toggle()"
+      [title]="mobilePreview.isActive() ? 'Exit mobile preview' : 'Mobile preview'">
+      <i class="bi bi-phone"></i>
+    </button>
+
+    <!-- User identity pill + menu -->
+    <div class="q-dropdown-wrap">
+      <button class="btn btn-link tb-user-btn" (click)="toggleMenu('user')" [class.tb-user-btn--open]="showUserMenu()">
+        <!-- Coloured avatar -->
+        <div class="tb-avatar" [style.background]="userProfile()?.avatarColor">
+          {{ userProfile()?.initials }}
+        </div>
+        <!-- Name + role — desktop only -->
+        <div class="tb-user-meta d-none d-lg-flex">
+          <span class="tb-user-name">{{ authStore.fullName() }}</span>
+          <span class="tb-lpa-chip"
+                [style.color]="userProfile()?.lpaInfo?.color"
+                [style.background]="userProfile()?.lpaInfo?.bg">
+            {{ userProfile()?.lpaInfo?.label }}
+          </span>
+        </div>
+        <i class="bi bi-chevron-down tb-user-chevron d-none d-lg-block"></i>
+      </button>
+
+      @if (showUserMenu()) {
+        <div class="q-dropdown-menu end user-dropdown">
+
+          <!-- ── Profile card ─────────────────────────────────────────────── -->
+          <div class="ud-card">
+            <div class="ud-avatar-wrap">
+              <div class="ud-avatar" [style.background]="userProfile()?.avatarColor">
+                {{ userProfile()?.initials }}
+              </div>
+              <div class="ud-online-dot"></div>
+            </div>
+            <div class="ud-card-info">
+              <div class="ud-name">{{ authStore.fullName() }}</div>
+              <div class="ud-email">{{ authStore.currentUser()?.email }}</div>
+            </div>
+          </div>
+
+          <!-- ── Role + LPA badges ─────────────────────────────────────────── -->
+          <div class="ud-badges">
+            <span class="ud-badge ud-badge--role"
+                  [style.color]="userProfile()?.roleInfo?.color"
+                  [style.background]="userProfile()?.roleInfo?.bg">
+              <i class="bi bi-person-badge"></i>
+              {{ userProfile()?.jobTitle }}
+            </span>
+            <span class="ud-badge ud-badge--lpa"
+                  [style.color]="userProfile()?.lpaInfo?.color"
+                  [style.background]="userProfile()?.lpaInfo?.bg">
+              <i class="bi bi-layers"></i>
+              {{ userProfile()?.lpaInfo?.label }}
+            </span>
+          </div>
+
+          <!-- ── Site row ──────────────────────────────────────────────────── -->
+          <div class="ud-site-row">
+            <i class="bi bi-building" style="color:#94A3B8"></i>
+            <span class="ud-site-name">{{ siteStore.currentSite() }}</span>
+            <span class="ud-site-id">{{ authStore.currentUser()?.siteId }}</span>
+          </div>
+
+          <div class="q-dropdown-divider"></div>
+
+          <button class="q-dropdown-item" (click)="navigateTo('/settings')">
+            <i class="bi bi-person"></i> My Profile
+          </button>
+          <button class="q-dropdown-item" (click)="navigateTo('/settings')">
+            <i class="bi bi-gear"></i> Settings
+          </button>
+          <div class="q-dropdown-divider"></div>
+          <button class="q-dropdown-item text-danger" (click)="logout()">
+            <i class="bi bi-box-arrow-right"></i> Sign Out
+          </button>
+        </div>
+      }
+    </div>
+
+  </div>
+</header>
