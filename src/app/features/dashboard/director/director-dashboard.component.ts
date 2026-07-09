@@ -231,6 +231,3 @@ export class DirectorDashboardComponent {
     { month: 'May', x: 190, y: 50 }, { month: 'Jun', x: 220, y: 44 },
   ];
 }
-
-//test comment
-//test comment 2 UAT
